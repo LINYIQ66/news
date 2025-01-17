@@ -16,30 +16,41 @@
   <h1>Latest News</h1>
   <div id="news-container"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/rss-parser/3.12.0/rss-parser.min.js"></script>
   <script>
-    const rssParser = new RSSParser();
-    const feedUrl = 'https://www.qbitai.com/rss'; // 替换为你想用的 RSS 源
+    // RSS feed URL (via rss2json to bypass CORS restrictions)
+    const feedUrl = 'https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/rss.xml';
 
     async function loadRSS() {
-      const feed = await rssParser.parseURL(feedUrl);
-      const container = document.getElementById('news-container');
-      container.innerHTML = ''; // 清空旧内容
-      feed.items.forEach(item => {
-        const newsItem = `
-          <div class="news-item">
-            <a href="${item.link}" target="_blank" class="news-link">
-              <div class="news-title">${item.title}</div>
-            </a>
-            <div class="news-summary">${item.contentSnippet || ''}</div>
-          </div>
-        `;
-        container.innerHTML += newsItem;
-      });
+      try {
+        const response = await fetch(feedUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        const container = document.getElementById('news-container');
+        container.innerHTML = ''; // Clear old content
+
+        data.items.forEach(item => {
+          const newsItem = `
+            <div class="news-item">
+              <a href="${item.link}" target="_blank" class="news-link">
+                <div class="news-title">${item.title}</div>
+              </a>
+              <div class="news-summary">${item.description || ''}</div>
+            </div>
+          `;
+          container.innerHTML += newsItem;
+        });
+      } catch (error) {
+        console.error('Error fetching RSS feed:', error);
+      }
     }
 
+    // Load RSS feed on page load
     loadRSS();
-    setInterval(loadRSS, 60000); // 每分钟更新一次
+    // Refresh RSS feed every 5 minutes
+    setInterval(loadRSS, 300000);
   </script>
 </body>
 </html>
