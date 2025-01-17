@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RSS News Feed</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .news-item { margin-bottom: 20px; }
+    .news-title { font-size: 18px; font-weight: bold; color: #333; }
+    .news-link { color: #007BFF; text-decoration: none; }
+    .news-summary { color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Latest News</h1>
+  <div id="news-container"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/rss-parser/3.12.0/rss-parser.min.js"></script>
+  <script>
+    const rssParser = new RSSParser();
+    const feedUrl = 'https://feeds.bbci.co.uk/news/rss.xml'; // 替换为你想用的 RSS 源
+
+    async function loadRSS() {
+      const feed = await rssParser.parseURL(feedUrl);
+      const container = document.getElementById('news-container');
+      container.innerHTML = ''; // 清空旧内容
+      feed.items.forEach(item => {
+        const newsItem = `
+          <div class="news-item">
+            <a href="${item.link}" target="_blank" class="news-link">
+              <div class="news-title">${item.title}</div>
+            </a>
+            <div class="news-summary">${item.contentSnippet || ''}</div>
+          </div>
+        `;
+        container.innerHTML += newsItem;
+      });
+    }
+
+    loadRSS();
+    setInterval(loadRSS, 60000); // 每分钟更新一次
+  </script>
+</body>
+</html>
